@@ -4,5 +4,8 @@
     <string name="app_name">AlbumLister</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="edit_text_artist_hint">Artist name</string>
+    <string name="button_get_albums">Get albums</string>
+    <string name="getting_artist_albums">Getting albums from %s</string>
 
 </resources>
