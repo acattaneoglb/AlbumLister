@@ -10,6 +10,8 @@ import android.widget.TextView;
 import java.util.List;
 
 /**
+ * Album adapter class
+ *
  * Created by ariel.cattaneo on 13/02/2015.
  */
 public class AlbumAdapter extends ArrayAdapter<Album> {
@@ -17,11 +19,11 @@ public class AlbumAdapter extends ArrayAdapter<Album> {
 
     public class ViewHolder {
         public final TextView textViewTitle;
-        public final TextView textViewLength;
+        public final TextView textViewDate;
 
         public ViewHolder(View view) {
             textViewTitle = (TextView)view.findViewById(R.id.text_view_album_title);
-            textViewLength = (TextView)view.findViewById(R.id.text_view_album_length);
+            textViewDate = (TextView)view.findViewById(R.id.text_view_album_date);
         }
     }
 
@@ -57,6 +59,6 @@ public class AlbumAdapter extends ArrayAdapter<Album> {
     private void displayAlbumInRow(int position, View rowView) {
         ViewHolder viewHolder = (ViewHolder) rowView.getTag();
         viewHolder.textViewTitle.setText(mAlbums.get(position).getTitle());
-        viewHolder.textViewLength.setText(mAlbums.get(position).getLength());
+        viewHolder.textViewDate.setText(mAlbums.get(position).getDate());
     }
 }

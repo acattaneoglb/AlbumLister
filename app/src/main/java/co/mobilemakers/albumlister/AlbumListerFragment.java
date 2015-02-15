@@ -37,7 +37,7 @@ public class AlbumListerFragment extends ListFragment {
     EditText mEditTextArtist;
     AlbumAdapter mAdapter;
 
-    protected class ArtistCallback implements Callback {
+    protected class ArtistIdCallback implements Callback {
         @Override
         public void onFailure(Request request, IOException e) {
             e.printStackTrace();
@@ -47,21 +47,21 @@ public class AlbumListerFragment extends ListFragment {
         public void onResponse(Response response) throws IOException {
             String responseString = response.body().string();
 
-            final String id = parseArtistResponse(responseString);
+            final String id = parseArtistIdResponse(responseString);
 
             try {
-                URL url = constructURLAlbumsQuery(id);
+                URL url = constructURLArtistInfoQuery(id);
 
                 Request idRequest = new Request.Builder().url(url.toString()).build();
                 OkHttpClient client = new OkHttpClient();
-                client.newCall(idRequest).enqueue(new AlbumCallback());
+                client.newCall(idRequest).enqueue(new ArtistInfoCallback());
             } catch (java.io.IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    protected class AlbumCallback implements Callback {
+    protected class ArtistInfoCallback implements Callback {
         @Override
         public void onFailure(Request request, IOException e) {
             e.printStackTrace();
@@ -133,17 +133,17 @@ public class AlbumListerFragment extends ListFragment {
 
     private void fetchAlbumsFromQueue(String artist) {
         try {
-            URL url = constructURLArtistQuery(artist);
+            URL url = constructURLArtistIdQuery(artist);
 
             Request idRequest = new Request.Builder().url(url.toString()).build();
             OkHttpClient client = new OkHttpClient();
-            client.newCall(idRequest).enqueue(new ArtistCallback());
+            client.newCall(idRequest).enqueue(new ArtistIdCallback());
         } catch (java.io.IOException e) {
             e.printStackTrace();
         }
     }
 
-    private URL constructURLArtistQuery(String artist) throws MalformedURLException {
+    private URL constructURLArtistIdQuery(String artist) throws MalformedURLException {
         final String MUSICBRAINZ_BASE_URL = "musicbrainz.org";
         final String API_PATH_1 = "ws";
         final String API_PATH_2 = "2";
@@ -163,16 +163,13 @@ public class AlbumListerFragment extends ListFragment {
         return new URL(uri.toString());
     }
 
-    private URL constructURLAlbumsQuery(String artistId) throws MalformedURLException {
+    private URL constructURLArtistInfoQuery(String artistId) throws MalformedURLException {
         final String MUSICBRAINZ_BASE_URL = "musicbrainz.org";
         final String API_PATH_1 = "ws";
         final String API_PATH_2 = "2";
         final String ARTIST_ENDPOINT = "artist";
         final String INC_KEY = "inc";
-        final String RECORDINGS_PARAMETER = "recordings";
-
-        // Those are themes, not albums
-        // TODO: See https://musicbrainz.org/doc/Development/XML_Web_Service/Version_2 (release or release-group)
+        final String RELEASES_PARAMETER = "releases";
 
         Uri.Builder builder = new Uri.Builder();
         builder.scheme("http").authority(MUSICBRAINZ_BASE_URL)
@@ -180,7 +177,7 @@ public class AlbumListerFragment extends ListFragment {
                 .appendPath(API_PATH_2)
                 .appendPath(ARTIST_ENDPOINT)
                 .appendPath(artistId)
-                .appendQueryParameter(INC_KEY, RECORDINGS_PARAMETER)
+                .appendQueryParameter(INC_KEY, RELEASES_PARAMETER)
                 .appendQueryParameter("fmt", "json");
         Uri uri = builder.build();
         Log.d(LOG_TAG, "Built URI: " + uri.toString());
@@ -188,7 +185,7 @@ public class AlbumListerFragment extends ListFragment {
         return new URL(uri.toString());
     }
 
-    private String parseArtistResponse(String response) {
+    private String parseArtistIdResponse(String response) {
         final String ARTISTS_ARRAY = "artists";
         final String ARTIST_ID = "id";
 
@@ -209,21 +206,26 @@ public class AlbumListerFragment extends ListFragment {
     }
 
     private List<Album> parseAlbumResponse(String response) {
-        final String ARTIST_RECS = "recordings";
+        final String ARTIST_RELEASES = "releases";
         final String REC_TITLE = "title";
-        final String REC_LENGTH = "length";
+        final String REC_DATE = "date";
 
         List<Album> albums = new ArrayList<>();
         Album album;
         try {
             JSONObject artistJson = new JSONObject(response);
-            JSONArray responseJsonArray = artistJson.getJSONArray(ARTIST_RECS);
+            JSONArray responseJsonArray = artistJson.getJSONArray(ARTIST_RELEASES);
             JSONObject object;
             for (int i = 0; i < responseJsonArray.length(); i++) {
                 object = responseJsonArray.getJSONObject(i);
                 album = new Album();
                 album.setTitle(object.getString(REC_TITLE));
-                album.setLength(object.getString(REC_LENGTH));
+                if (object.has(REC_DATE)) {
+                    album.setDate(object.getString(REC_DATE));
+                }
+                else {
+                    album.setDate("");
+                }
                 albums.add(album);
             }
         }

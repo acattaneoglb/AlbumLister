@@ -9,7 +9,7 @@
               android:layout_height="wrap_content"
               android:textAppearance="?android:attr/textAppearanceLarge"/>
 
-    <TextView android:id="@+id/text_view_album_length"
+    <TextView android:id="@+id/text_view_album_date"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"/>
 </LinearLayout>
